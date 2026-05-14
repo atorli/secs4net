@@ -141,9 +141,10 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
                     }
 
                     CommunicationStateChanging(ConnectionState.Connecting);
+                    Socket? socket = null;
                     try
                     {
-                        var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
+                        socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
                         {
                             Blocking = false,
                             ReceiveBufferSize = _socketReceiveBufferSize,
@@ -160,6 +161,7 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
                     }
                     catch (Exception ex) when (!IsDisposed)
                     {
+                        socket?.Dispose();
                         _logger.Error(ex.Message);
                         _logger.Info($"Start T5 Timer: {T5 / 1000} sec.");
                         await Task.Delay(T5, cancellation).ConfigureAwait(false);
